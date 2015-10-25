@@ -28,6 +28,21 @@ var ablumMarconi = {
 	]
 };
 
+var ablumBeatles = {
+	name: 'The White Album',
+	artist: 'The Beatles',
+	label: 'Apple',
+	year: '1968',
+	albumArtUrl: 'assets/images/album_covers/20.png',
+	songs: [
+		{name: 'The Continuing Story of Bungalow Bill', length: '3:14'},
+		{name: 'While My Guitar Gently Weeps', length: '4:45'},
+		{name: 'Happiness Is A Warm Gun', length: '2:43'},
+		{name: 'Im So Tired', length: '2:03'},
+		{name: 'Rocky Raccoon', length: '3:33'}
+	]
+};
+
 var createSongRow = function(songNumber, songName, songLength) {
 	var template = 
 		'<tr class="album-view-song-item">'
@@ -61,4 +76,24 @@ var setCurrentAlbum = function(album){
 
 window.onload = function(){
 	setCurrentAlbum(albumPicasso);
+
+	// get all the album covers
+
+	var albumArt = document.getElementsByClassName('album-cover-art');
+	console.log('album art: ', albumArt)
+
+	document.getElementsByClassName('album-cover-art')[0].addEventListener('click', moveCover);
+
+	// when the current album cover gets clicked this function is called
+	var clickedCounter = 0;
+	function moveCover() {
+		var albumCovers = [ablumMarconi, ablumBeatles, albumPicasso]
+		if (clickedCounter < albumCovers.length) {
+			setCurrentAlbum(albumCovers[clickedCounter]);
+		}	else if (clickedCounter === albumCovers.length) {
+			clickedCounter = 0;
+			setCurrentAlbum(albumCovers[clickedCounter]);
+		}
+		clickedCounter += 1;
+	}
 }
