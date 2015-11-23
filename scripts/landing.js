@@ -1,5 +1,3 @@
-var pointsArray = document.getElementsByClassName('point');
-
 var revealPoints = function(point) {
 	point.style.opacity = 1;
 	point.style.transform = "scaleX(1) translateY(0)";
@@ -8,27 +6,30 @@ var revealPoints = function(point) {
 }
 
 
-var animatePoints = function(points) {
-	console.log('points: ', points)
-	forEach(points, revealPoints);
+var animatePoints = function() {
+	var revealPoint = function(){
+		$(this).css({
+			opacity: 1, 
+			transform: 'scaleX(1) translateY(0)'
+		});
+	};
+	$.each($('.point', revealPoint));
 };
 
-window.onload = function() {
-	var sellingPoints = document.getElementsByClassName('selling-points')[0];
-	console.log('sellingPoints: ', document.getElementsByClassName('selling-points'));
-	console.log('length: ', sellingPoints.length);
-	var scrollDistance = sellingPoints.getBoundingClientRect().top - window.innerHeight + 200;
+$(window).load(function() {
 	
-	if (window.innerHeight > 950) {
-		animatePoints(pointsArray);
+	if ($(window).height() > 950) {
+		animatePoints();
 	}
 
-	window.addEventListener('scroll', function(event){
+	var scrollDistance = $('.selling-points').offset().top - $(window).height() + 200;
+
+	$(window).scroll(function(event){
 		// console.log('current offset from the top is ' + sellingPoints.getBoundingClientRect().top + ' pixels');
-		if(document.body.scrollTop >= scrollDistance) {
-			animatePoints(pointsArray);
+		if($(window).scrollTop >= scrollDistance) {
+			animatePoints();
 		}
 	});
-}
+});
 
 // animatePoints();
