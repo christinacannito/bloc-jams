@@ -7,13 +7,14 @@ var revealPoints = function(point) {
 
 
 var animatePoints = function() {
+	console.log('in anmate points');
 	var revealPoint = function(){
 		$(this).css({
 			opacity: 1, 
 			transform: 'scaleX(1) translateY(0)'
 		});
 	};
-	$.each($('.point', revealPoint));
+	$.each($('.point'), revealPoint);
 };
 
 $(window).load(function() {
@@ -31,5 +32,3 @@ $(window).load(function() {
 		}
 	});
 });
-
-// animatePoints();
