@@ -29,7 +29,8 @@ var createSongRow = function(songNumber, songName, songLength) {
 		if (currentlyPlayingSongNumber !== songNumber) {
 			// Switch from Play -> Pause button to indicate new song is playing.
 			$(this).html(pauseButtonTemplate);
-			currentlyPlayingSongNumber = songNumber;
+			currentlyPlayingSongNumber = songNumber; // songNumber defined above 
+			// getSong(SongNumber);
 			currentSongFromAlbum = currentAlbum.songs[songNumber - 1];
 			updatePlayerBarSong(); // updatePlayerBarSong is called - updates the bottom of page
 		} else if (currentlyPlayingSongNumber === songNumber) {
@@ -127,7 +128,7 @@ var nextSong = function() {
 	}
 
 	// set a new current song
-	currentlyPlayingSongNumber = currentSongIndex + 1;
+	currentlyPlayingSongNumber = currentSongIndex + 1; // this would be replaced
 	// now increasing the index number and going to the next song...
 	currentSongFromAlbum = currentAlbum.songs[currentSongIndex];
 	// NOTE: this currentSongIndex is from above where the number has now increased by one
@@ -281,3 +282,12 @@ function moveCover() {
 	clickedCounter += 1;
 	// everytime it is clicked the counter increases by one 
 }
+
+var getSong = function(songNumber) {
+	// assigns currentlyPlayingSongNumber and currentSongFromAlbum a new value based on the new song number.
+	currentlyPlayingSongNumber = songNumber;
+	// originally set to null - then it gets reasigned the index number of the song it is on in the array
+	currentSongFromAlbum = songNumber;
+	// originally set to null - then it gets reasigned and holds the song object
+}
+	// then replace all the instances where we manually assing values to these functions with a call to this function getSong
