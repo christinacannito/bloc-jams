@@ -1,3 +1,25 @@
+function setSong(songNumber) { // songNumber = currentSongIndex + 1
+	if (songNumber === null) {
+		currentlyPlayingSongNumber = null;
+		currentSongFromAlbum = null;
+	} else {
+		// assigns currentlyPlayingSongNumber and currentSongFromAlbum a new value based on the new song number.
+		currentlyPlayingSongNumber = parseInt(songNumber);
+		// originally set to null - then it gets reasigned the index number of the song it is on in the array
+		console.log('currentSongFromAlbum: ', currentSongFromAlbum)
+		currentSongFromAlbum = currentAlbum.songs[songNumber - 1];
+	}
+
+	// originally set to null - then it gets reasigned and holds the song object
+}
+	// then replace all the instances where we manually assing values to these functions with a call to this function setSong
+
+
+function getSongNumberCell(number) {
+	return $('.song-item-number[data-song-number="' + number + '"]');
+	// returns the song number element that corresponds to that song number;
+}
+
 var createSongRow = function(songNumber, songName, songLength) {
 	var template = 
 		'<tr class="album-view-song-item">'
@@ -23,15 +45,17 @@ var createSongRow = function(songNumber, songName, songLength) {
 			// it gets asigned a number in the nextSong function
 
 			// Revert to song number for currently playing song because user started playing new song.
-			var currentlyPlayingCell = $('.song-item-number[data-song-number="' + currentlyPlayingSongNumber + '"]');
+			var currentlyPlayingCell = getSongNumberCell(currentlyPlayingSongNumber)
 			currentlyPlayingCell.html(currentlyPlayingSongNumber);
 		}
 		if (currentlyPlayingSongNumber !== songNumber) {
 			// Switch from Play -> Pause button to indicate new song is playing.
 			$(this).html(pauseButtonTemplate);
-			currentlyPlayingSongNumber = songNumber; // songNumber defined above 
-			// getSong(SongNumber);
-			currentSongFromAlbum = currentAlbum.songs[songNumber - 1];
+			//currentlyPlayingSongNumber = songNumber; // songNumber defined above 
+			setSong(songNumber);
+			// currentSongFromAlbum = currentAlbum.songs[songNumber - 1];
+			console.log('currentSongFromAlbum (getting set): ', currentSongFromAlbum);
+
 			updatePlayerBarSong(); // updatePlayerBarSong is called - updates the bottom of page
 		} else if (currentlyPlayingSongNumber === songNumber) {
 			// Switch from Pause -> Play button to pause currently playing song.
@@ -39,8 +63,9 @@ var createSongRow = function(songNumber, songName, songLength) {
 			$('.main-controls .play-pause').html(playerBarPlayButton); 
 			// updatePlayerBarSong is called - updates the bottom of page
 			// NOT sure why you need the .html function again...
-			currentlyPlayingSongNumber = null;
-			currentSongFromAlbum = null;
+			setSong(null);
+			// currentlyPlayingSongNumber = null;
+			// currentSongFromAlbum = null;
 		}
 	}
 
@@ -60,7 +85,7 @@ var createSongRow = function(songNumber, songName, songLength) {
 
 	var offHover = function(event){
 		//placeholder function logic
-		console.log("songNumber type is " + typeof songNumber + "\n and currentlyPlayingSongNumber type is " + typeof currentlyPlayingSongNumber);
+		// console.log("songNumber type is " + typeof songNumber + "\n and currentlyPlayingSongNumber type is " + typeof currentlyPlayingSongNumber);
 		var songNumberCell = $(this).find('.song-item-number');
 		var songNumber = parseInt(songNumberCell.attr('data-song-number'));
 
@@ -120,7 +145,7 @@ var nextSong = function() {
 
 	console.log('currentSongIndex: ', currentSongIndex);
 
-	currentSongIndex ++;
+	currentSongIndex++;
 
 	if(currentSongIndex >= currentAlbum.songs.length) {
 		// resetting currentSongIndex to zero if it is greater than or equal to current.songs.length 
@@ -128,9 +153,11 @@ var nextSong = function() {
 	}
 
 	// set a new current song
-	currentlyPlayingSongNumber = currentSongIndex + 1; // this would be replaced
+	setSong(currentSongIndex + 1); // songNumber = currentSongIndex + 1
+	// currentlyPlayingSongNumber = currentSongIndex + 1; 
+	// above is replaced...
 	// now increasing the index number and going to the next song...
-	currentSongFromAlbum = currentAlbum.songs[currentSongIndex];
+	// currentSongFromAlbum = currentAlbum.songs[currentSongIndex];
 	// NOTE: this currentSongIndex is from above where the number has now increased by one
 
 	// update the player bar information
@@ -148,10 +175,10 @@ var nextSong = function() {
 	// that was the added helper function that just returns the index number.
 
 	console.log('lastSongNumber: ', lastSongNumber);
-	var $nextSongNumberCell = $('.song-item-number[data-song-number="' + currentlyPlayingSongNumber + '"]');
+	var $nextSongNumberCell = getSongNumberCell(currentlyPlayingSongNumber);
 	// updating the data-song-number with the currentlyPlayingSongNumber
 
-	var $lastSongNumberCell = $('.song-item-number[data-song-number="' + lastSongNumber + '"]');
+	var $lastSongNumberCell =  getSongNumberCell(lastSongNumber);
 	// updating the data-song-number with the lastSongNumber
 
 	// here is where they put that new information that is stored in those variables is put into the html
@@ -184,8 +211,9 @@ var previousSong = function() {
 	}
 
 	// set a new current song
-	currentlyPlayingSongNumber = currentSongIndex + 1;
-	currentSongFromAlbum = currentAlbum.songs[currentSongIndex];
+	setSong(currentSongIndex + 1)
+	// currentlyPlayingSongNumber = currentSongIndex + 1;
+	// currentSongFromAlbum = currentAlbum.songs[currentSongIndex];
 
 	// update the player bar information 
 	// below is just updating the html data
@@ -196,8 +224,8 @@ var previousSong = function() {
 
 	var lastSongNumber = parseInt(getLastSongNumber(currentSongIndex));
 	// lastSongNumber is defined and set
-	var $previousSongNumberCell = $('.song-item-number[data-song="' + currentlyPlayingSongNumber + '"]');
-	var $lastSongNumberCell = $('.song-item-number[data-song-number="' + lastSongNumber + '"]')
+	var $previousSongNumberCell = getSongNumberCell(currentlyPlayingSongNumber);
+	var $lastSongNumberCell = getSongNumberCell(lastSongNumber);
 
 	// here you are setting the html with the new information that is in those variables above
 	$previousSongNumberCell.html(pauseButtonTemplate);
@@ -283,11 +311,4 @@ function moveCover() {
 	// everytime it is clicked the counter increases by one 
 }
 
-var getSong = function(songNumber) {
-	// assigns currentlyPlayingSongNumber and currentSongFromAlbum a new value based on the new song number.
-	currentlyPlayingSongNumber = songNumber;
-	// originally set to null - then it gets reasigned the index number of the song it is on in the array
-	currentSongFromAlbum = songNumber;
-	// originally set to null - then it gets reasigned and holds the song object
-}
-	// then replace all the instances where we manually assing values to these functions with a call to this function getSong
+
