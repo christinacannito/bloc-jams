@@ -1,19 +1,29 @@
 function setSong(songNumber) { // songNumber = currentSongIndex + 1
-	if (songNumber === null) {
-		currentlyPlayingSongNumber = null;
-		currentSongFromAlbum = null;
-	} else {
-		// assigns currentlyPlayingSongNumber and currentSongFromAlbum a new value based on the new song number.
-		currentlyPlayingSongNumber = parseInt(songNumber);
-		// originally set to null - then it gets reasigned the index number of the song it is on in the array
-		console.log('currentSongFromAlbum: ', currentSongFromAlbum)
-		currentSongFromAlbum = currentAlbum.songs[songNumber - 1];
+	if (currentSoundFile) {
+		currentSoundFile.stop();
 	}
+	currentlyPlayingSongNumber = parseInt(songNumber);
+	// originally set to null - then it gets reasigned the index number of the song it is on in the array
+	console.log('currentSongFromAlbum: ', currentSongFromAlbum)
+	currentSongFromAlbum = currentAlbum.songs[songNumber - 1];
+	console.log('setSong currentSongFromAlbum: ', currentSongFromAlbum);
+	currentSoundFile = new buzz.sound(currentSongFromAlbum.audioUrl, {
+		formats: ['mp3'],
+		preload: true // this just means that they load as soon as the page loads...why does this have to be specified
+	}); // why do we need this? this seems overly complicated...
+	
+	setVolume(currentVolume);
 
-	// originally set to null - then it gets reasigned and holds the song object
+	// assigns currentlyPlayingSongNumber and currentSongFromAlbum a new value based on the new song number.
+
 }
 	// then replace all the instances where we manually assing values to these functions with a call to this function setSong
 
+var setVolume = function(volume) {
+	if(currentSoundFile) {
+		currentSoundFile.setVolume(volume);
+	}
+}
 
 function getSongNumberCell(number) {
 	return $('.song-item-number[data-song-number="' + number + '"]');
@@ -50,22 +60,33 @@ var createSongRow = function(songNumber, songName, songLength) {
 		}
 		if (currentlyPlayingSongNumber !== songNumber) {
 			// Switch from Play -> Pause button to indicate new song is playing.
+			setSong(songNumber);
+			currentSoundFile.play();
 			$(this).html(pauseButtonTemplate);
 			//currentlyPlayingSongNumber = songNumber; // songNumber defined above 
-			setSong(songNumber);
+			
 			// currentSongFromAlbum = currentAlbum.songs[songNumber - 1];
 			console.log('currentSongFromAlbum (getting set): ', currentSongFromAlbum);
 
 			updatePlayerBarSong(); // updatePlayerBarSong is called - updates the bottom of page
 		} else if (currentlyPlayingSongNumber === songNumber) {
 			// Switch from Pause -> Play button to pause currently playing song.
-			$(this).html(playButtonTemplate);
-			$('.main-controls .play-pause').html(playerBarPlayButton); 
+			// $(this).html(playButtonTemplate);
+			// $('.main-controls .play-pause').html(playerBarPlayButton); 
 			// updatePlayerBarSong is called - updates the bottom of page
 			// NOT sure why you need the .html function again...
-			setSong(null);
+			// setSong(null);
 			// currentlyPlayingSongNumber = null;
 			// currentSongFromAlbum = null;
+			if (currentSoundFile.isPaused()) { // if it is paused (true)
+				$(this).html(pauseButtonTemplate);
+				$('.main-controls .play-pause').html(playerBarPauseButton);
+				currentSoundFile.play();
+			} else { // if it was false
+				$(this).html(playButtonTemplate);
+				$('.main-controls .play-pause').html(playerBarPauseButton);
+				currentSoundFile.pause();
+			}
 		}
 	}
 
@@ -154,6 +175,8 @@ var nextSong = function() {
 
 	// set a new current song
 	setSong(currentSongIndex + 1); // songNumber = currentSongIndex + 1
+	currentSoundFile.play();
+	updatePlayerBarSong();
 	// currentlyPlayingSongNumber = currentSongIndex + 1; 
 	// above is replaced...
 	// now increasing the index number and going to the next song...
@@ -211,7 +234,9 @@ var previousSong = function() {
 	}
 
 	// set a new current song
-	setSong(currentSongIndex + 1)
+	setSong(currentSongIndex + 1);
+	currentSoundFile.play();
+	updatePlayerBarSong();
 	// currentlyPlayingSongNumber = currentSongIndex + 1;
 	// currentSongFromAlbum = currentAlbum.songs[currentSongIndex];
 
@@ -275,6 +300,8 @@ var playerBarPauseButton = '<span class="ion-pause"></span>'; // this is for the
 var currentAlbum = null;
 var currentlyPlayingSongNumber = null; // holds the index number the song is on in the array
 var currentSongFromAlbum = null; // holds the song object
+var currentSoundFile = null;
+var currentVolume = 80;
 
 // below just creating variable of the html elements so rather that writing $('.main-controls .previous') you can write $previousButton
 var $previousButton = $('.main-controls .previous');
