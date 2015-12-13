@@ -26,6 +26,24 @@ var setVolume = function(volume) {
 	}
 }
 
+/* 
+
+This is from the solution video 
+var togglePlayFromPlayerBar = function () {
+	var $currentlyPlayingCell = getSongNumberCell(currentlyPlayingSongNumber);
+	if (currentSoundFile.isPuased()) {
+		$currentlyPlayingCell.html(pauseButtonTemplate);
+		$(this).html(playerBarPauseButton);
+		currentSoundFile.play();
+	} else if (currentSoundFile) {
+		$currentlyPlayingCell.html(playButtonTemplate);
+		$(this).html(playerBarPlayButton);
+		currentSoundFile.pause();
+	}
+}
+
+*/
+
 var togglePlayFromPlayerBar = function () {
 	// if the song is paused do something
 	console.log('correct button clicked');
