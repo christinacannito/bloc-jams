@@ -13,12 +13,19 @@ function setSong(songNumber) { // songNumber = currentSongIndex + 1
 		preload: true // this just means that they load as soon as the page loads...why does this have to be specified
 	}); // why do we need this? this seems overly complicated...
 	
+
 	setVolume(currentVolume);
 
 	// assigns currentlyPlayingSongNumber and currentSongFromAlbum a new value based on the new song number.
 
 }
 	// then replace all the instances where we manually assing values to these functions with a call to this function setSong
+
+var seek = function(time) {
+	if (currentSoundFile) {
+		currentSoundFile.setTime(time);
+	}
+} // not sure how this is working? 
 
 var setVolume = function(volume) {
 	if(currentSoundFile) {
@@ -114,6 +121,8 @@ var createSongRow = function(songNumber, songName, songLength) {
 		// attached as a click listener - because attached to the button 
 		// variable name space when a function/variable is used only for a particular function
 		console.log('the play/pause button pressed');
+		
+		updateSeekBarWhileSongPlays();
 		var songNumber = parseInt($(this).attr('data-song-number')); // 
 		// where does the data-song-number come from? 
 		// this comes from the template above and the number is the songNumber variable which is created 
@@ -127,6 +136,7 @@ var createSongRow = function(songNumber, songName, songLength) {
 			// it gets asigned a number in the nextSong function
 
 			// Revert to song number for currently playing song because user started playing new song.
+			updateSeekBarWhileSongPlays();
 			var currentlyPlayingCell = getSongNumberCell(currentlyPlayingSongNumber)
 			currentlyPlayingCell.html(currentlyPlayingSongNumber);
 		}
@@ -139,7 +149,7 @@ var createSongRow = function(songNumber, songName, songLength) {
 			
 			// currentSongFromAlbum = currentAlbum.songs[songNumber - 1];
 			console.log('currentSongFromAlbum (getting set): ', currentSongFromAlbum);
-
+			updateSeekBarWhileSongPlays();
 			updatePlayerBarSong(); // updatePlayerBarSong is called - updates the bottom of page
 		} else if (currentlyPlayingSongNumber === songNumber) {
 			// Switch from Pause -> Play button to pause currently playing song.
@@ -150,12 +160,17 @@ var createSongRow = function(songNumber, songName, songLength) {
 			// setSong(null);
 			// currentlyPlayingSongNumber = null;
 			// currentSongFromAlbum = null;
+
 			if (currentSoundFile.isPaused()) { // if it is paused (true)
 				$(this).html(pauseButtonTemplate);
 				$('.main-controls .play-pause').html(playerBarPauseButton);
 				// console.log('currentSoundFile.isPaused()', currentSoundFile.isPaused())
+				updateSeekBarWhileSongPlays();
 				currentSoundFile.play();
+				nextSong();
+				previousSong();
 			} else { // if it was false
+				updateSeekBarWhileSongPlays();
 				$(this).html(playButtonTemplate);
 				$('.main-controls .play-pause').html(playerBarPlayButton);
 				currentSoundFile.pause();
@@ -215,6 +230,70 @@ var setCurrentAlbum = function(album){
 	} // loops through songs in an album 
 };
 
+var updateSeekBarWhileSongPlays = function() {
+	if (currentSoundFile) {
+		currentSoundFile.bind('timeupdate', function(event) {
+			var seekBarFillRatio = this.getTime() / this.getDuration();
+			var $seekBar = $('.seek-control .seek-bar');
+
+			updateSeekPercentage($seekBar, seekBarFillRatio);
+		})
+	}
+}
+
+var updateSeekPercentage = function($seekBar, seekBarFill) {
+	var offsetXPercent = seekBarFill * 100;
+
+	offsetXPercent = Math.max(0, offsetXPercent);
+	offsetXPercent = Math.min(100, offsetXPercent);
+	// why do we need a max and min? 
+
+	var percentageString = offsetXPercent + '%';
+	$seekBar.find('.fill').width(percentageString);
+	$seekBar.find('.thumb').css({left: percentageString});
+}
+
+var setupSeekBars = function() {
+	var $seekBars = $('.player-bar .seek-bar');
+	$seekBars.click(function(event){
+		var offsetX = event.pageX - $(this).offset().left;
+		var barWidth = $(this).width();
+		var seekBarFillRatio = offsetX / barWidth; 
+
+		if ($(this).parent().attr('class') == 'seek-control') {
+			seek(seekBarFillRatio * currentSoundFile.getDuration());
+		} else {
+			setVolume(seekBarFillRatio * 100);
+		}
+
+		updateSeekPercentage($(this), seekBarFillRatio);
+	});
+
+	$seekBars.find('.thumb').mousedown(function(event){
+		var $seekBar = $(this).parent();
+
+		$(document).bind('mousemove.thumb', function(event){
+			var offsetX = event.pageX - $seekBar.offset().left;
+			var barWidth = $seekBar.width();
+			var seekBarFillRatio = offsetX / barWidth;
+
+			if ($seekBar.parent().attr('class') == 'seek-control') {
+				seek(seekBarFillRatio * currentSoundFile.getDuration());
+			} else {
+				setVolume(seekBarFillRatio);
+			}
+
+			updateSeekPercentage($seekBar, seekBarFillRatio);
+		});
+	
+		$(document).bind('mouseup.thumb', function(){
+			$(document).unbind('mousemove.thumb');
+			$(document).unbind('mouseup.thumb');
+		}); // not sure why we binded the objects and then unbinded them here 
+
+	});
+}
+
 var trackIndex = function(album, song) {
 	// for example this gets called in nextSong 
 	// "currentAlbum" is passed in for album and "currentSongFromAlbum" is passed in for song
@@ -248,6 +327,7 @@ var nextSong = function() {
 
 	// set a new current song
 	setSong(currentSongIndex + 1); // songNumber = currentSongIndex + 1
+	updateSeekBarWhileSongPlays()
 	currentSoundFile.play();
 	updatePlayerBarSong();
 	// currentlyPlayingSongNumber = currentSongIndex + 1; 
@@ -286,7 +366,7 @@ var nextSong = function() {
 
 
 var previousSong = function() {
-
+	
 	var getLastSongNumber = function(index) {
 		console.log('index 2: ', index);
 		return index == (currentAlbum.songs.length - 1) ? 1 : index + 2;
@@ -308,6 +388,7 @@ var previousSong = function() {
 
 	// set a new current song
 	setSong(currentSongIndex + 1);
+	updateSeekBarWhileSongPlays()
 	currentSoundFile.play();
 	updatePlayerBarSong();
 	// currentlyPlayingSongNumber = currentSongIndex + 1;
@@ -384,6 +465,7 @@ var bottomControlBtn = $('.main-controls .play-pause');
 
 $(document).ready(function(){
 	setCurrentAlbum(albumPicasso);
+	setupSeekBars();
 	$previousButton.click(previousSong); // the variables that are defined above...these are just the html elements with a click event that takes in one function  
 	$nextButton.click(nextSong);
 	bottomControlBtn.click(togglePlayFromPlayerBar);
