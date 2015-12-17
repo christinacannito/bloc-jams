@@ -111,7 +111,7 @@ var createSongRow = function(songNumber, songName, songLength) {
 		'<tr class="album-view-song-item">'
 		+ ' <td class="song-item-number" data-song-number="' + songNumber + '">' + songNumber + '</td>'
 		+ ' <td class="song-item-title">' + songName + '</td>'
-		+ ' <td class="song-item-duration">' + songLength + '</td>'
+		+ ' <td class="song-item-duration">' + filterTimeCode(songLength) + '</td>'
 		+ '<tr>'
 		;
 
@@ -144,6 +144,12 @@ var createSongRow = function(songNumber, songName, songLength) {
 			// Switch from Play -> Pause button to indicate new song is playing.
 			setSong(songNumber);
 			currentSoundFile.play();
+
+			var $volumeFill = $('.volume .fill');
+			var $volumeThumb = $('.volume .thumb');
+			$volumeFill.width(currentVolume + '%');
+			$volumeThumb.css({left: currentVolume + '%'})
+
 			$(this).html(pauseButtonTemplate);
 			//currentlyPlayingSongNumber = songNumber; // songNumber defined above 
 			
@@ -232,10 +238,16 @@ var setCurrentAlbum = function(album){
 
 var updateSeekBarWhileSongPlays = function() {
 	if (currentSoundFile) {
+
 		currentSoundFile.bind('timeupdate', function(event) {
 			var seekBarFillRatio = this.getTime() / this.getDuration();
 			var $seekBar = $('.seek-control .seek-bar');
+			
 
+			// as rounded number: 
+			var roundedNum = Math.round(seekBarFillRatio);
+			console.log('time test: ', this)
+			setCurrentTimeInPlayerBar(this.getTime()) // leave this line  
 			updateSeekPercentage($seekBar, seekBarFillRatio);
 		})
 	}
@@ -292,6 +304,46 @@ var setupSeekBars = function() {
 		}); // not sure why we binded the objects and then unbinded them here 
 
 	});
+}
+
+var filterTimeCode = function(timeInSeconds) {
+	// this is where the seconds gets coverted to time string
+	// logic that was sent and return value 
+
+
+	console.log('time in seconds: ', timeInSeconds); // appearing as 16.71 (example)
+	// try rounding the number
+	var numRounded = parseInt(timeInSeconds);
+	console.log('numRounded: ', numRounded)
+	// get the remainder from % 60
+	console.log('numRounded % 60: ', numRounded % 60) // this re
+	var seconds = numRounded % 60; // will go up to 60 seconds then will do a recount
+	console.log('seconds: ', seconds)
+
+	var minutes = parseInt(numRounded / 60);
+	console.log('minutes: ', minutes)
+
+	var result = minutes + ":" + (seconds < 10 ? "0" + seconds : seconds);
+	return result;
+
+	// var totalSec = timeInSeconds / 1000; // error
+	// console.log('totalSec: ', totalSec);
+	// var minutes = parseInt( totalSec / 60 ) % 60; //original
+	// var minutes = parseInt( totalSec / 60 )
+	// console.log('minutes: ', minutes)
+	
+	// var seconds = totalSec % 60;
+	// console.log('seconds: ', seconds);
+	// var result = minutes + ":" + (seconds < 10 ? "0" + seconds : seconds);
+	// console.log('result: ', result);
+	// return result;
+}
+
+var setCurrentTimeInPlayerBar = function(currentTime) {
+	// $('.current-time').html(currentTime)
+	console.log('currentTime: ', currentTime) // current time ex: 1.42
+	var timesString = filterTimeCode(currentTime) // this converts it to hours mins
+	$('.current-time').html(timesString)
 }
 
 var trackIndex = function(album, song) {
